@@ -4,6 +4,7 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
+from skimage.transform import resize
 
 from imageio import imread
 # How to read in the images? Hmmm..
@@ -103,8 +104,9 @@ def read_images(full_dataset, data_path = 'data/archive/'):
 
     for name, value in full_dataset['image'].iteritems():
         IMAGE_PATH = f'{data_path}images/{value}'
-        img = imread(IMAGE_PATH, as_gray=True) # grey
-        length = 270000 # number of pixels total (450 x 600 x 3 (if RGB))
+        img = imread(IMAGE_PATH, as_gray=False) # grey
+        img = resize(img, (28,28,3))
+        length = 2352 # number of pixels total (450 x 600 x 3 (if RGB))
         img = img.reshape(length)
         images.append(img)
         print(len(images))
