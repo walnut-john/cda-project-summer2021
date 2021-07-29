@@ -10,12 +10,12 @@ from imageio import imread
 # How to read in the images? Hmmm..
 
 
-def read_labels(data_path = 'data/archive/'):
+def read_labels(data_path = 'data/'):
     """Function to read in the .csv file 'GroundTruth' and reverse the one-hot encoding that was applied.
     (Should be better for classification algorithms?)
 
     Args:
-        data_path (str, optional): Path of .csv file. Defaults to 'data/archive/'.
+        data_path (str, optional): Path of .csv file. Defaults to 'data/'.
 
     Returns:
         Pandas df: two column pandas dataframe - image name and cancer type
