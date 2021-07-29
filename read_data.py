@@ -129,13 +129,15 @@ def get_all_data(process_images_again = False):
         image_data.to_csv('data/image_data.csv', index = False) # write to .csv to avoid processing again next time
         print('Images processed and saved as a .csv file in data/ folder. \n')
 
-    #plot_img(np.array(image_data.iloc[0,:]).reshape((22, 30, 3))) # test for images reshaped
+    #plot_img(np.array(image_data.iloc[0,:]).reshape((22, 30, 3))) # test for images reshaped - looks good
     pca = PCA(n_components=50, random_state=42)
     image_data_reduced = pca.fit_transform(image_data)
     exp_var = pca.explained_variance_ratio_
     cum_sum_eigenvalues = np.cumsum(exp_var)
+
     print(cum_sum_eigenvalues)
     print('\n')
+    
     image_data_reduced = pd.DataFrame(image_data_reduced)
 
     combined_data = pd.concat((df, image_data_reduced), axis = 1)
