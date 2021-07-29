@@ -1,14 +1,15 @@
-from numpy.core.numeric import full
+import glob
+from os.path import exists
+
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 from skimage.transform import resize
 
-from imageio import imread
-# How to read in the images? Hmmm..
-
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 def read_labels(data_path = 'data/'):
     """Function to read in the .csv file 'GroundTruth' and reverse the one-hot encoding that was applied.
@@ -37,15 +38,14 @@ def read_labels(data_path = 'data/'):
     return df
 
 
-def split_and_stratify_data(full_data, train_pct = 0.8, random = 42):
+def split_and_stratify_data(full_data, train_pct = 0.8, random = 1):
     """Function to split and stratify full dataset resulting in 
     train, test, and validation sets with equal distributions of classes.
-    Just another method to try.
 
     Args:
         full_data (pandas df): Full dataset to split into train test and validation
         train_pct (float, optional): % of data to train on. Defaults to 0.8.
-        random (int, optional): Random State. Defaults to 42.
+        random (int, optional): Random State. Defaults to 1.
 
     Returns:
         3 pandas df: train, test, validation sets
@@ -54,19 +54,10 @@ def split_and_stratify_data(full_data, train_pct = 0.8, random = 42):
     train, remaining = train_test_split(full_data, train_size = train_pct, shuffle = True, random_state = random, stratify = full_data['cancer_type'])
     test, validate = train_test_split(remaining, train_size = 0.50, shuffle = True, random_state = random, stratify = remaining['cancer_type'])
     
-    '''
-    print('Train Size: ', len(train.index))
-    print('Test Size: ', len(test.index))
-    print('Validate Size: ', len(validate.index))
-    print(train.groupby(['cancer_type']).agg(['count']))
-    print(test.groupby(['cancer_type']).agg(['count']))
-    print(validate.groupby(['cancer_type']).agg(['count']))
-    '''
-
     return train, test, validate
 
 
-def get_balanced_df(df, val_size=350, col='label'):
+def get_balanced_df(df, val_size = 350, col='label'):
     """Function to balance dataset based on Class and add Weight.
     Args:
         df (DataFrame, required): Data to split
@@ -87,50 +78,73 @@ def get_balanced_df(df, val_size=350, col='label'):
         balanced.append(label_i)
         
     balanced_df = pd.concat(balanced)
+
     return balanced_df
 
 
-def read_images(full_dataset, data_path = 'data/archive/'):
-    """[summary]
-
-
-    Images are 450 x 600 x 3 - which is equal to a vector of length 810,000.. Too many features. Need to downsample
-    Args:
-        full_dataset ([type]): [description]
-        data_path (str, optional): [description]. Defaults to 'data/archive/'.
-    """
-
-    images = []
-
-    for name, value in full_dataset['image'].iteritems():
-        IMAGE_PATH = f'{data_path}images/{value}'
-        img = imread(IMAGE_PATH, as_gray=False) # grey
-        img = resize(img, (28,28,3))
-        length = 2352 # number of pixels total (450 x 600 x 3 (if RGB))
-        img = img.reshape(length)
-        images.append(img)
-        print(len(images))
-
+def get_imgs(img_dir='data/images/*'):
+    imgs = glob.glob(img_dir)
+    return imgs
     
-    X = np.array(images)
+    
+def read_img(img_path):
+    img = plt.imread(img_path)
+    #print('Image Shape: ', img.shape)
+    return img
+    
+    
+def plot_img(img):
+    plt.imshow(img)
+    #plt.savefig('test.png')
 
-    # PCA doesn't work with this many features.. What to do?
-    '''
-    pca = PCA(n_components=30, random_state=42)
 
-    X_reduced = pca.fit_transform(X)
-    print(pca.explained_variance_ratio_)
+def reshape_img(img, scale=4):
 
-    X_reduced = pd.DataFrame(X_reduced)
-    X_reduced.to_csv('pca_features.csv', index = False)
-    return X_reduced
-    '''
+    img_resized = resize(img, (img.shape[0] // scale, img.shape[1] // scale), anti_aliasing=True)
+    length = np.prod(img_resized.shape)
+    vectorized_image = img_resized.reshape(length)
+    #print('Image Resized: ', img.shape, ' -> ', img_resized.shape)
+    return vectorized_image, img_resized.shape 
+
+
+def get_img_generator(df, img_dir=r'data/images/', x='image', y='cancer_type', h=112, w=150, batch=50):
+    gen = ImageDataGenerator()
+    gen_data = gen.flow_from_dataframe(df, img_dir, x_col=x, y_col=y, target_size=(h, w), batch_size=batch,
+                                        class_mode='categorical') #, color_mode='rgb'
+    return gen_data
+
+
+def get_all_data(process_images_again = False):
+
+    df = read_labels()
+    print('GroundTruth.csv read. Processing/searching for image data. May take a few minutes if process_images_again == True.\n')
+
+    if exists('data/image_data.csv') and process_images_again == False:
+        image_data = pd.read_csv('data/image_data.csv')
+        print('Existing image data read..\n')
+    else:
+        x_imgs = [read_img('data/images/'+img) for img in df['image']] 
+        image_data = np.array([reshape_img(img, scale = 20)[0] for img in x_imgs]) # changed scale = 10 for smaller images
+        image_data = pd.DataFrame(image_data)
+        image_data.to_csv('data/image_data.csv', index = False) # write to .csv to avoid processing again next time
+        print('Images processed and saved as a .csv file in data/ folder. \n')
+
+    #plot_img(np.array(image_data.iloc[0,:]).reshape((22, 30, 3))) # test for images reshaped
+    pca = PCA(n_components=50, random_state=42)
+    image_data_reduced = pca.fit_transform(image_data)
+    exp_var = pca.explained_variance_ratio_
+    cum_sum_eigenvalues = np.cumsum(exp_var)
+    print(cum_sum_eigenvalues)
+    print('\n')
+    image_data_reduced = pd.DataFrame(image_data_reduced)
+
+    combined_data = pd.concat((df, image_data_reduced), axis = 1)
+
+    print(combined_data.head())
+
+    return combined_data
+
 
 if __name__ == "__main__":
-    x = read_labels()
-    train, test, validate = split_and_stratify_data(full_data = x)
-
-    train_df2 = get_balanced_df(train, val_size = 2000, col='cancer_type')
-    print(train_df2.groupby(['cancer_type','class_weight']).agg(['count']))
-    X = read_images(full_dataset = x)
-    print(X.shape)
+    all_data = get_all_data(process_images_again = False)
+    print('Done!')
