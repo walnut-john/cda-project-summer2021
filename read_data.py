@@ -57,7 +57,7 @@ def split_and_stratify_data(full_data, train_pct = 0.8, random = 1):
     return train, test, validate
 
 
-def get_balanced_df(df, val_size = 350, col='label'):
+def get_balanced_df(df, val_size = 350, col='label', add_class_weight_col = False):
     """Function to balance dataset based on Class and add Weight.
     Args:
         df (DataFrame, required): Data to split
@@ -74,7 +74,8 @@ def get_balanced_df(df, val_size = 350, col='label'):
             weight_i = 1.0
         else:
             weight_i = val_size/len(label_i.index)
-        label_i['class_weight'] = weight_i
+        if add_class_weight_col:
+            label_i['class_weight'] = weight_i
         balanced.append(label_i)
         
     balanced_df = pd.concat(balanced)
@@ -114,35 +115,35 @@ def get_img_generator(df, img_dir=r'data/images/', x='image', y='cancer_type', h
     return gen_data
 
 
-def get_all_data(process_images_again = False):
+def get_all_data(process_images_again = False, number_of_pca_features = 50):
 
     df = read_labels()
     print('GroundTruth.csv read. Processing/searching for image data. May take a few minutes if process_images_again == True.\n')
 
     if exists('data/image_data.csv') and process_images_again == False:
         image_data = pd.read_csv('data/image_data.csv')
-        print('Existing image data read..\n')
+        print('Existing image data read..')
     else:
         x_imgs = [read_img('data/images/'+img) for img in df['image']] 
         image_data = np.array([reshape_img(img, scale = 20)[0] for img in x_imgs]) # changed scale = 10 for smaller images
         image_data = pd.DataFrame(image_data)
         image_data.to_csv('data/image_data.csv', index = False) # write to .csv to avoid processing again next time
-        print('Images processed and saved as a .csv file in data/ folder. \n')
+        print('Images processed and saved as a .csv file in data/ folder. ')
 
     #plot_img(np.array(image_data.iloc[0,:]).reshape((22, 30, 3))) # test for images reshaped - looks good
-    pca = PCA(n_components=50, random_state=42)
+    pca = PCA(n_components=number_of_pca_features, random_state=42)
     image_data_reduced = pca.fit_transform(image_data)
     exp_var = pca.explained_variance_ratio_
     cum_sum_eigenvalues = np.cumsum(exp_var)
 
-    print(cum_sum_eigenvalues)
-    print('\n')
+    #print(cum_sum_eigenvalues)
+    #print('\n')
     
     image_data_reduced = pd.DataFrame(image_data_reduced)
 
     combined_data = pd.concat((df, image_data_reduced), axis = 1)
 
-    print(combined_data.head())
+    #print(combined_data.head())
 
     return combined_data
 
