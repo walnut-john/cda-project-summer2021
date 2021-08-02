@@ -136,7 +136,8 @@ def get_all_data(process_images_again = False, number_of_pca_features = 50):
     exp_var = pca.explained_variance_ratio_
     cum_sum_eigenvalues = np.cumsum(exp_var)
 
-    #print(cum_sum_eigenvalues)
+    print('Here is the cumulative variance explained by the top n principal components..')
+    print(cum_sum_eigenvalues)
     #print('\n')
     
     image_data_reduced = pd.DataFrame(image_data_reduced)
