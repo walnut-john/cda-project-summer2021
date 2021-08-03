@@ -9,7 +9,7 @@
 Repository for CDA project for skin cancer image classification. The project goal is to
 
 ## Install Instructions
-1. Clone Repo 
+1. Clone Repo with below command.
 ```py
 git clone https://github.com/walnut-john/cda-project-summer2021.git
 ```
@@ -20,14 +20,12 @@ git clone https://github.com/walnut-john/cda-project-summer2021.git
 
 ## Environement Setup
 ##### Run on your local machine in a virtual environment with Python3.
-* git clone
 * virtualenv -p python3 3envname
 * source 3envname/bin/activate
 * pip install -r requirements.txt
-* python main.py
+* python run.py
 
 ##### Run on your local machine with Docker.
-- git clone 
 - cd cda-project-summer2021
 - docker build -t image-classifier-models .
 - docker run --name image-classifier-models
