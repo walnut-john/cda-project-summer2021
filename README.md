@@ -16,6 +16,7 @@ git clone https://github.com/walnut-john/cda-project-summer2021.git
 3. [Download Skin Lesion Dataset](https://www.kaggle.com/surajghuwalewala/ham1000-segmentation-and-classification)
 4. Unzip the 'archive.zip' and move to data folder. Use cda-project-summer2021/data/... as path in code
 5. Follow the Environement Setup instructions below.
+6. Run Notebooks in Jupyter Lab
 
 
 ## Environement Setup
