@@ -6,7 +6,7 @@
 
 
 ## Purpose
-Repository for CDA project for skin cancer image classification. The project goal is to
+Repository for CDA project for skin cancer image classification. The project goal is to correctly classify skin lesions with high accuracy using machine learning models.
 
 ## Install Instructions
 1. Clone Repo with below command.
