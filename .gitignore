@@ -1,5 +1,6 @@
 # ignore data folder
 /data
+/results_images
 .vscode
 
 # Byte-compiled / optimized / DLL files
