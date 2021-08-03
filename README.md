@@ -11,9 +11,9 @@ Repository for CDA project for skin cancer image classification. The project goa
 ## Install Instructions
 1. Clone Repo 
 ```py
-git clone 
+git clone https://github.com/walnut-john/cda-project-summer2021.git
 ```
-3. [Download Skin Lesion Dataset] (https://www.kaggle.com/surajghuwalewala/ham1000-segmentation-and-classification)
+3. [Download Skin Lesion Dataset](https://www.kaggle.com/surajghuwalewala/ham1000-segmentation-and-classification)
 4. Unzip the 'archive.zip' and move to data folder. Use cda-project-summer2021/data/... as path in code
 5. Follow the Environement Setup instructions below.
 
@@ -28,6 +28,6 @@ git clone
 
 ##### Run on your local machine with Docker.
 - git clone 
-- cd gtm-qa-tool
-- docker build -t qa-app .
-- docker run --name qa-app
+- cd cda-project-summer2021
+- docker build -t image-classifier-models .
+- docker run --name image-classifier-models
