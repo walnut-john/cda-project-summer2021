@@ -23,7 +23,7 @@ git clone https://github.com/walnut-john/cda-project-summer2021.git
 * virtualenv -p python3 3envname
 * source 3envname/bin/activate
 * pip install -r requirements.txt
-* python run.py
+* jupyter lab
 
 ##### Run on your local machine with Docker.
 - cd cda-project-summer2021
